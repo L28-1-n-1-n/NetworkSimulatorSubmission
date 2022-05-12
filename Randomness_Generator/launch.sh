@@ -1,0 +1,1 @@
+g++ -std=c++17 -I ./Eigen/ ./RandomGraphMain.cpp -o test.out -L ./BOOST/libboost_graph-mt.a
