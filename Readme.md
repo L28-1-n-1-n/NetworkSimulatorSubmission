@@ -4,10 +4,13 @@ This is a network simulator designed to model synchronous and asynchronous execu
 ## Architecture
 The network simulator is written using object-oriented programming in C++. It is encapsulated into three parts: 
 1. The Network Simulator
+
 ![Network Simulator Engine](/image/netsim1.png)
 ![Annotations](/image/netsim2.png)
 2. The Graph Generator
+
 3. Nodes that run local logic
+
 ![Logic at each node](/image/local_logic.png)
 
 ## Compilation
