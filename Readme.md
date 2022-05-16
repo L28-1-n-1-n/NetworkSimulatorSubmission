@@ -11,9 +11,10 @@ The network simulator is written using object-oriented programming in C++. It is
 </p>
 
 ### 2. The Graph Generator
-This generates graphs in various topologies fed directly to the network simualtor as inputs
+This generates graphs in various topologies fed directly to the network simualtor as inputs.
 
-### 3. Nodes that run local logic
+### 3. Node logic
+This is the logic run at every node, independent of each other. In this implementation, the logic chosen is Peleg's Time-optimal leader-election algorithm[1].
 <img src="/image/local_logic.png" alt="Logic at each node" height=80%>
 
 ## Compilation
