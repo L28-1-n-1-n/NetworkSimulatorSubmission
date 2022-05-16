@@ -6,13 +6,11 @@ The network simulator is written using object-oriented programming in C++. It is
 1. The Network Simulator
 <p float="left">
 <img src="/image/netsim1.png" alt="Network Simulation Engine" height=80%>
-<img src="/image/netsim2.png" alt="Annotations" height=80%>
+<img src="/image/Annotations.png" alt="Annotations" height=80%>
 </p>
 2. The Graph Generator
 
 3. Nodes that run local logic
-
-![Logic at each node](/image/local_logic.png)
 <img src="/image/local_logic.png" alt="Logic at each node" height=80%>
 
 ## Compilation
