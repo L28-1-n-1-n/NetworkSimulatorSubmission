@@ -57,8 +57,8 @@ struct iterator_traits<node_pair_iterator<T>> {
 
 Graph generateRandomGraph(std::uint32_t num_nodes, float initiator_probability, float edge_probability, std::default_random_engine& random_gen)
 {
-    std::ofstream myfile;
-    myfile.open("./test.edgelist");
+    // std::ofstream myfile;
+    // myfile.open("./test.edgelist");
 	// std::ofstream myfile("test.edgelist");
 
 	Graph g;
@@ -99,13 +99,13 @@ Graph generateRandomGraph(std::uint32_t num_nodes, float initiator_probability, 
 
     for (const auto &pair : sampled_edges)
     {
-        std::cout << "Adding edge: (" << pair.first << ", " << pair.second << ")" << std::endl;
+        // std::cout << "Adding edge: (" << pair.first << ", " << pair.second << ")" << std::endl;
         boost::add_edge(pair.first, pair.second, g);
-		myfile << pair.first << " " << pair.second << "\n";
-		std::cout << "Written to myfile : " << pair.first << " " << pair.second << std::endl;
+		// myfile << pair.first << " " << pair.second << "\n";
+		// std::cout << "Written to myfile : " << pair.first << " " << pair.second << std::endl;
     }
 	
-	myfile.close();
+	// myfile.close();
     return g;
 }
 
@@ -133,16 +133,26 @@ Graph generateLineGraph(std::uint32_t num_nodes)
     return g;
 }
 
-Graph generateRingGraph(std::uint32_t num_nodes)
+Graph generateRingGraph(std::uint32_t num_nodes, float initiator_probability, std::default_random_engine& random_gen)
 {
     Graph g;
     std::optional<boost::graph_traits<Graph>::vertex_descriptor> first_descriptor, last_descriptor;
+
+    bool any_initiators = false;
+    std::bernoulli_distribution initiator_dist{initiator_probability};
 
     for (std::uint32_t i = 0; i < num_nodes; ++i)
     {
         auto descriptor = boost::add_vertex(Node{}, g);
         g[descriptor]._id = descriptor;
         g[descriptor]._x = descriptor;
+
+		
+        if (initiator_dist(random_gen)) {
+            std::cout << "Node " << i << " is an initiator" << std::endl;
+            g[descriptor]._initiator = true;
+            any_initiators = true;
+        }
 
         if (last_descriptor.has_value()) {
             boost::add_edge(*last_descriptor, descriptor, g);
@@ -153,19 +163,60 @@ Graph generateRingGraph(std::uint32_t num_nodes)
         }
         last_descriptor = descriptor;
     }
-    
+
+    if (!any_initiators) {
+        throw std::runtime_error("No initiators.");
+    }
+	
     boost::add_edge(first_descriptor.value(), last_descriptor.value(), g);
 
-	for (uint32_t i = 0; i < num_nodes; ++i)
+    return g;
+}
+
+
+
+Graph generateHyperCubeGraph(std::uint32_t num_nodes, float initiator_probability, std::default_random_engine& random_gen)
+{
+	Graph g;
+
+    bool any_initiators = false;
+    std::bernoulli_distribution initiator_dist{initiator_probability};
+    for (uint32_t i = 0; i < num_nodes; ++i)
     {
-        auto neighbours = boost::adjacent_vertices(i, g);
-        for (auto vd : boost::make_iterator_range(neighbours))
+        auto descriptor = boost::add_vertex(Node{}, g);
+        g[descriptor]._id = descriptor;
+		g[descriptor]._x = descriptor;
+
+        if (initiator_dist(random_gen)) {
+            std::cout << "Node " << i << " is an initiator" << std::endl;
+            g[descriptor]._initiator = true;
+            any_initiators = true;
+        }
+    }
+
+    if (!any_initiators) {
+        throw std::runtime_error("No initiators.");
+    }
+
+	uint32_t n = std::log2(num_nodes) + 1;
+
+    for (uint32_t i = 0; i < num_nodes - 1; ++i)
+    {
+        for (uint32_t j = 0; j < n; ++j)
         {
-            std::cout << "vertex " << i << " has adjacent vertex : " << g[vd]._id << "\n";
+            uint32_t copyI = i;
+            copyI ^= (uint32_t)1 << j;
+            if (copyI > i && copyI < num_nodes)
+            {
+                // smaller vertices have been added in the previous rounds already
+                boost::add_edge(i, copyI, g);
+            }
         }
     }
     return g;
 }
+
+
 
 Graph generateConnectedRingsGraph(std::uint32_t num_nodes_a, std::uint32_t num_nodes_b)
 {

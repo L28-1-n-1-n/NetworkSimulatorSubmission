@@ -1,1 +1,0 @@
-g++ -std=c++17 -I ../Randomness_Generator/Eigen/ ./RingGraphMain.cpp -o test.out -L ./BOOST/libboost_graph-mt.a

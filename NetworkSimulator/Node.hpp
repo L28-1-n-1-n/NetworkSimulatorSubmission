@@ -6,6 +6,8 @@
 #include <map>
 #include <algorithm>
 
+#include <iostream>
+
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/properties.hpp>
 #include <boost/property_map/property_map.hpp>
@@ -76,7 +78,7 @@ private:
     template <typename PropertyMap, typename Iterator, typename MessageSender>
     bool run_pulse(const PropertyMap &id_map, const Iterator &adjacent_begin, const Iterator &adjacent_end, const MessageSender &message_sender)
     {
-        // std::cout << "run_pulse : " << _pulse << std::endl;
+        // std::cout <<"Node " << _id << " runs pulse : " << _pulse << std::endl;
 
         ++_pulse;
 
@@ -100,7 +102,7 @@ private:
         if (std::any_of(to_process.begin(), to_process.end(), [](const auto &message)
                         { return message.d == -1; }))
         {
-            // std::cout << "completion signal received" << std::endl;
+			std::cout << "completion signal received by node " << _id << std::endl;
             _d = -1;
             broadcast(id_map, adjacent_begin, adjacent_end, message_sender);
             return true;
@@ -176,7 +178,7 @@ private:
         return std::all_of(
             adjacent_begin,
             adjacent_end,
-            [this, id_map](auto descriptor)
+            [this, &id_map](auto descriptor)
             {
                 std::uint32_t neighbor_id = id_map[descriptor];
                 return _incoming_messages.find(neighbor_id) != _incoming_messages.end(); // if neighbor_id is not in _incoming_messages

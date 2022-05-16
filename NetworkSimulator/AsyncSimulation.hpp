@@ -23,9 +23,11 @@ public:
     using TimeType = typename DelayDistribution::result_type;
     using VertexDescriptor = boost::graph_traits<Graph>::vertex_descriptor;
 
-    AsyncSimulation(Graph &graph, DelayDistribution delay_distribution, std::default_random_engine random_engine = std::default_random_engine{})
-        : _graph{graph}, _delay_distribution{delay_distribution}, _random_engine{random_engine}
-    {
+    // AsyncSimulation(Graph &graph, DelayDistribution delay_distribution, std::uint64_t random_seed)
+    //     : _graph{graph}, _delay_distribution{delay_distribution}, _random_engine{random_seed}
+	    AsyncSimulation(Graph &graph, DelayDistribution delay_distribution, std::uint64_t random_seed, bool sync, bool verbose)
+        : _graph{graph}, _delay_distribution{delay_distribution}, _random_engine{random_seed}, _sync{sync}, _verbose{verbose}    
+{
         auto id_map = boost::get(&Node::_id, _graph);
 
         auto [begin, end] = boost::vertices(_graph);
@@ -37,7 +39,10 @@ public:
 
     std::uint32_t run()
     {
-        std::unordered_map<std::uint32_t, bool> termination_map{};
+        // std::cout << "Verbose is initialized to " << _verbose << std::endl;
+        // std::cout << "Sync is initialized to " << _sync << std::endl;
+		
+		std::unordered_map<std::uint32_t, bool> termination_map{};
 
         auto id_map = boost::get(&Node::_id, _graph);
 
@@ -61,27 +66,8 @@ public:
             }
             MessageWrapper message_wrapper = _message_queue.top();
             auto target_descriptor = _node_map.at(message_wrapper._target);
-            //     std::cout << "Message received at node " << id_map[target_descriptor] << std::endl;
-            // std::cout << "Start message wrapper" << std::endl;
-            //     std::cout << "    Source node: " << message_wrapper._source << std::endl;
-            //     std::cout << "    Target node: " << message_wrapper._target << std::endl;
-
-            //     std::cout << "    arrival time: " << message_wrapper._arrival_time << std::endl;
-
-            //     std::cout << "    message_x: " << message_wrapper._message.x << std::endl;
-            //     std::cout << "    message_d: " << message_wrapper._message.d << std::endl;
-            //     std::cout << "End message wrapper" << std::endl;
-
             _message_queue.pop();
             messageCount += 1;
-
-            if (messageCount % 100000 == 0)
-            {
-                std::cout << "Current time : " << _current_time
-                          << std::endl
-                          << "Message count : " << messageCount << std::endl;
-            }
-
             _current_time = message_wrapper._arrival_time;
             // std::cout << "current time updated to:" << message_wrapper._arrival_time << std::endl;
 
@@ -104,7 +90,7 @@ public:
                              { return !pair.second; }));
         std::cout << "Leader elected : " << _graph[*boost::vertices(_graph).first]._x
                   << std::endl
-                  << "Termination time: " << _current_time
+                  << "Termination time : " << _current_time
                   << std::endl
                   << "Message count : " << messageCount
                   << std::endl;
@@ -114,30 +100,38 @@ public:
 private:
     Graph &_graph;
     DelayDistribution _delay_distribution;
-    std::default_random_engine &_random_engine;
+    std::default_random_engine _random_engine;
+	bool _verbose;
+	bool _sync;
     std::uint64_t messageCount = 0;
 
     auto make_message_sender(std::uint32_t source)
     {
         return [this, source](std::uint32_t target, const Message &message)
         {
-            std::uint32_t arrival_time = _current_time + _delay_distribution(_random_engine) + 1;
-            // std::uint32_t arrival_time = _current_time  + 1;
-
-            MessageWrapper message_wrapper{
-                // _current_time + _delay_distribution(_random_engine) + 1,
+			std::uint32_t arrival_time;
+			if (_sync == true)
+				arrival_time = _current_time + 1;
+			else
+            	arrival_time = _current_time + _delay_distribution(_random_engine) + 1;
+            
+			MessageWrapper message_wrapper{
                 arrival_time,
                 source,
                 target,
                 message};
             _message_queue.emplace(message_wrapper);
-            // std::cout << "MESSAGE SENDER : " << std::endl;
-            // std::cout << "    _current_time: " << _current_time << std::endl;
-            // std::cout << "     current_time + _delay_distribution(_random_engine) + 1: " << arrival_time << std::endl;
-            // std::cout << "    source : " << source << std::endl;
-            // std::cout << "    target : " << target << std::endl;
-            // std::cout << "    message._x : " << message.x << std::endl;
-            // std::cout << "    message._d : " << message.d << std::endl;
+
+			if (_verbose == true)
+			{
+				std::cout << "MESSAGE SENDER : " << std::endl;
+	            std::cout << "    current_time: " << _current_time << std::endl;
+	            std::cout << "    arrival_time: " << arrival_time << std::endl;
+	            std::cout << "    source : " << source << std::endl;
+	            std::cout << "    target : " << target << std::endl;
+	            std::cout << "    message._x : " << message.x << std::endl;
+	            std::cout << "    message._d : " << message.d << std::endl;
+			}
         };
     }
 
