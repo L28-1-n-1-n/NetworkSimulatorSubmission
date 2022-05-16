@@ -15,6 +15,7 @@ This generates graphs in various topologies fed directly to the network simualto
 
 ### 3. Node logic
 This is the logic run at every node, independent of each other. In this implementation, the logic chosen is Peleg's Time-optimal leader-election algorithm[1].
+
 <img src="/image/local_logic.png" alt="Logic at each node" height=80%>
 
 ## Compilation
