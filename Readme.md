@@ -3,14 +3,17 @@ This is a network simulator designed to model synchronous and asynchronous execu
 
 ## Architecture
 The network simulator is written using object-oriented programming in C++. It is encapsulated into three parts: 
-1. The Network Simulator
+
+### 1. The Network Simulator
 <p float="left">
 <img src="/image/netsim1.png" alt="Network Simulation Engine" height=80%>
 <img src="/image/Annotations.png" alt="Annotations" height=80%>
 </p>
-2. The Graph Generator
 
-3. Nodes that run local logic
+### 2. The Graph Generator
+This generates graphs in various topologies fed directly to the network simualtor as inputs
+
+### 3. Nodes that run local logic
 <img src="/image/local_logic.png" alt="Logic at each node" height=80%>
 
 ## Compilation
@@ -51,4 +54,10 @@ Execution will also be terminated when the generated graph has no initiator.
 ### Time delay
 Time delay in global cycles for each message to arrive at destination node in asynchronous executions, modeled by Poisson distribution
 
+
+## Testing
+Google test is used to write unit tests for the diameter-finding algorithm. To compile the tests, download and install [googletest](https://github.com/google/googletest), then compile and launch tests with the command : 
+```
+g++ -std=c++20 -I ./NetworkSimulator/Eigen/ ./NetworkSimulator/DiameterTest.cpp -o test -L ./BOOST/libboost_graph-mt.a -lgtest -lgtest_main && test
+```
 [1] D. Peleg , Time-optimal leader election in general net- works, Journal of Parallel and Distributed Computing, Vol 8, Issue 1, pp.96-99, 1990.
